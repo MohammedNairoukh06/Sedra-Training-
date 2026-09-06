@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="TicketDesk.API/TicketDesk.API.csproj" />
+  <Project Path="TicketDesk.BL/TicketDesk.BL.csproj" />
+  <Project Path="TicketDesk.DAL/TicketDesk.DAL.csproj" />
+  <Project Path="TicketDesk.Domain/TicketDesk.Domain.csproj" />
+  <Project Path="TicketDesk.Shared/TicketDesk.Shared.csproj" />
+</Solution>
