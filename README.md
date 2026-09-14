@@ -4,7 +4,6 @@ This week I moved the TicketDesk schema from raw SQL into EF Core. Instead of
 writing CREATE TABLE statements by hand like Week 2, I built the five
 entities as plain C# classes and let EF Core generate the database from them
 through migrations.
-
 ## Project layout
 
 - `TicketDesk.Domain` — the five entity classes and the `TicketStatus` enum.
