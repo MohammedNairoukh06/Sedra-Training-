@@ -1,12 +1,13 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace TicketDesk.DAL.Migrations
 {
     /// <inheritdoc />
-    [Migration("20260906090000_InitialCreate")]
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
@@ -84,6 +85,30 @@ namespace TicketDesk.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TicketCategories",
+                columns: table => new
+                {
+                    CategoriesId = table.Column<int>(type: "int", nullable: false),
+                    TicketsId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TicketCategories", x => new { x.CategoriesId, x.TicketsId });
+                    table.ForeignKey(
+                        name: "FK_TicketCategories_Categories_CategoriesId",
+                        column: x => x.CategoriesId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TicketCategories_Tickets_TicketsId",
+                        column: x => x.TicketsId,
+                        principalTable: "Tickets",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TicketComments",
                 columns: table => new
                 {
@@ -111,34 +136,31 @@ namespace TicketDesk.DAL.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "TicketCategories",
-                columns: table => new
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
                 {
-                    TicketId = table.Column<int>(type: "int", nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
+                    { 1, "Hardware" },
+                    { 2, "Software" },
+                    { 3, "Network" },
+                    { 4, "Account" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
                 {
-                    table.PrimaryKey("PK_TicketCategories", x => new { x.TicketId, x.CategoryId });
-                    table.ForeignKey(
-                        name: "FK_TicketCategories_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TicketCategories_Tickets_TicketId",
-                        column: x => x.TicketId,
-                        principalTable: "Tickets",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    { 1, "Admin" },
+                    { 2, "Agent" },
+                    { 3, "Customer" }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TicketCategories_CategoryId",
+                name: "IX_TicketCategories_TicketsId",
                 table: "TicketCategories",
-                column: "CategoryId");
+                column: "TicketsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TicketComments_TicketId",
@@ -164,12 +186,23 @@ namespace TicketDesk.DAL.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "TicketCategories");
-            migrationBuilder.DropTable(name: "TicketComments");
-            migrationBuilder.DropTable(name: "Categories");
-            migrationBuilder.DropTable(name: "Tickets");
-            migrationBuilder.DropTable(name: "Users");
-            migrationBuilder.DropTable(name: "Roles");
+            migrationBuilder.DropTable(
+                name: "TicketCategories");
+
+            migrationBuilder.DropTable(
+                name: "TicketComments");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Tickets");
+
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
         }
     }
 }
