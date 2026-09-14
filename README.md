@@ -66,3 +66,62 @@ Migration files are committed as normal source code in `TicketDesk.DAL/Migration
 - Cascade delete is only on `Ticket → Comments`, since comments don't mean
   anything without their ticket. Everything else uses restrict so I don't
   accidentally lose data through an unrelated delete.
+
+# Week 4: Real API — Clean Architecture + Full CRUD
+
+## Overview
+* **Program:** Trainee Training Plan (8-Week Program) — Week 4 of 8
+* **Project:** TicketDesk Project (5 working days, backend only)
+* **Goal:** Build a fully working, versioned TicketDesk Web API structured with Clean Architecture (Repository + Service + Dependency Injection + AutoMapper) exposing full CRUD operations for tickets over the Week 3 database.
+
+---
+
+## Architectural Principles
+* **Clean Architecture Flow:** Controllers $\rightarrow$ Services (`.BL`) $\rightarrow$ Repositories (`.DAL`) $\rightarrow$ Entities (`.Domain`).
+* **Thin Controllers:** Controllers only coordinate HTTP requests and responses; all business logic lives in the Service layer.
+* **DTO Encapsulation:** Entities are never exposed directly to the API consumers; all data mapping occurs via AutoMapper.
+* **Real Data:** All operations run against the actual seeded database (no fake/in-memory data).
+
+---
+
+## Daily Schedule & Milestones
+
+### Day 1: Stand Up the API + Wire Clean Architecture
+* **Focus:** ASP.NET Core request pipeline, middleware, and Dependency Injection setup.
+* **Tasks:**
+  * Configure `Program.cs` and verify Swagger runs on startup.
+  * Register `TicketDeskDbContext` in the DI container via `AddDbContext`.
+  * Add a basic health endpoint (`GET /api/health`) to confirm the pipeline is operational.
+* **Deliverable:** The API runs, Swagger opens, and `TicketDeskDbContext` resolves through DI.
+
+### Day 2: Repository Pattern in the DAL
+* **Focus:** Data abstraction and decoupling EF Core from the business layer.
+* **Tasks:**
+  * Create `IGenericRepository<T>` and `GenericRepository<T>` in `.DAL`.
+  * Implement base CRUD operations (`GetAll`, `GetById`, `Add`, `Update`, `Delete`).
+  * Register the repository in DI (`AddScoped`) and verify it reads seeded database rows.
+* **Deliverable:** Generic repository resolves via DI and retrieves data from the database.
+
+### Day 3: Service Layer + DTOs + AutoMapper
+* **Focus:** Business logic encapsulation and object mapping.
+* **Tasks:**
+  * Define DTOs (`TicketDto`, `CreateTicketDto`, `UpdateTicketDto`) in `.Shared`.
+  * Implement `ITicketService` and `TicketService` in `.BL`.
+  * Configure an AutoMapper profile to map between Domain entities and DTOs.
+* **Deliverable:** The Service layer executes business operations and returns mapped DTOs.
+
+### Day 4: Full CRUD Endpoints (Thin Controller)
+* **Focus:** RESTful actions, HTTP status codes, and asynchronous actions.
+* **Tasks:**
+  * Build `TicketsController` with the 5 CRUD endpoints (`GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`).
+  * Implement appropriate response types (`Ok`, `NotFound`, `CreatedAtAction`, `NoContent`).
+  * Verify end-to-end data creation and persistence via Swagger.
+* **Deliverable:** End-to-end CRUD operations work across API $\rightarrow$ Service $\rightarrow$ Repository layers.
+
+### Day 5: API Versioning + Final Verification
+* **Focus:** API lifecycle management and production readiness.
+* **Tasks:**
+  * Install `Asp.Versioning.Mvc` and configure URL-segment versioning (`/api/v1/tickets`).
+  * Verify all versioned endpoints via Swagger.
+  * Conduct a code cleanup, ensure clean Git history, and submit the final Pull Request.
+* **Deliverable:** A fully tested, versioned Clean Architecture Web API merged via PR.
