@@ -41,7 +41,15 @@ builder.Services.AddApiVersioning(options =>
     options.GroupNameFormat = "'v'VVV";
     options.SubstituteApiVersionInUrl = true;
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
 
 // Swagger
@@ -75,7 +83,7 @@ using (var scope = app.Services.CreateScope())
 
     Console.WriteLine("Seeded categories: " + string.Join(", ", categories));
 }
-
+app.UseCors("AllowReactDev");
 // Simple root endpoint
 app.MapGet("/", () => "TicketDesk API is running.");
 
