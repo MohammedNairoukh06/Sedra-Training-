@@ -1,4 +1,4 @@
-# TicketDesk Training Curriculum (Weeks 1 – 5)
+# TicketDesk Training Curriculum 
 
 Complete training curriculum, technical objectives, and weekly deliverables for the TicketDesk full-stack application.
 
