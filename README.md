@@ -4,7 +4,7 @@ Complete training curriculum, technical objectives, and weekly deliverables for 
 
 ---
 
-## 📅 Week 1: C# + OOP + Git
+##  Week 1: C# + OOP + Git
 - **Objective:** Master C# fundamentals, core object-oriented principles, and git collaboration workflows[cite: 1].
 - **Key Concepts:**
   - Value types vs reference types, control flow (`switch`, `if`), loops, and methods[cite: 1].
@@ -15,7 +15,7 @@ Complete training curriculum, technical objectives, and weekly deliverables for 
 
 ---
 
-## 📅 Week 2: SQL + Database Design
+##  Week 2: SQL + Database Design
 - **Objective:** Learn relational database modeling, normalization, and raw SQL scripting[cite: 2].
 - **Key Concepts:**
   - DQL & DML: `SELECT`, `WHERE`, `ORDER BY`, `INSERT`, `UPDATE`, `DELETE`, and aggregations (`GROUP BY`, `HAVING`)[cite: 2].
@@ -26,7 +26,7 @@ Complete training curriculum, technical objectives, and weekly deliverables for 
 
 ---
 
-## 📅 Week 3: EF Core — Domain, DAL & Migrations
+##  Week 3: EF Core — Domain, DAL & Migrations
 - **Objective:** Scaffold a Clean Architecture solution and generate the database using Code-First EF Core[cite: 3].
 - **Key Concepts:**
   - Layered project separation: `.Domain` (POCOs), `.DAL` (data access), `.BL` (business logic), `.API`, and `.Shared`[cite: 3].
@@ -37,7 +37,7 @@ Complete training curriculum, technical objectives, and weekly deliverables for 
 
 ---
 
-## 📅 Week 4: Clean Architecture Web API + Full CRUD
+##  Week 4: Clean Architecture Web API + Full CRUD
 - **Objective:** Build a robust, layered ASP.NET Core RESTful Web API with decoupled data access[cite: 4].
 - **Key Concepts:**
   - Dependency Injection (DI) and Clean Architecture inward dependency rules[cite: 4].
@@ -49,7 +49,7 @@ Complete training curriculum, technical objectives, and weekly deliverables for 
 
 ---
 
-## 📅 Week 5: React Foundations + Ticket UI
+##  Week 5: React Foundations + Ticket UI
 - **Objective:** Build a React client application using Vite and integrate it with the Week 4 REST API[cite: 5].
 - **Key Concepts:**
   - React Core: JSX, components, unidirectional data flow with `props`, and reactive state with `useState`[cite: 5].
