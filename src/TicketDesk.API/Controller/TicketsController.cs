@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketDesk.BL;
 using TicketDesk.Shared;
@@ -6,6 +7,7 @@ using TicketDesk.Shared;
 namespace TicketDesk.API.Controllers;
 
 [ApiController]
+[Authorize]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tickets")]
 public class TicketsController : ControllerBase
@@ -46,6 +48,7 @@ public class TicketsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Agent,Manager,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _service.DeleteAsync(id);

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
+using TicketDesk.BL.Exceptions;
 using TicketDesk.DAL;
 using TicketDesk.Domain.Entities;
 using TicketDesk.Shared;
@@ -10,12 +12,18 @@ public class TicketService : ITicketService
     private readonly IGenericRepository<Ticket> _repo;
     private readonly IGenericRepository<Category> _categoryRepo;
     private readonly IMapper _mapper;
+    private readonly ILogger<TicketService> _logger;
 
-    public TicketService(IGenericRepository<Ticket> repo, IGenericRepository<Category> categoryRepo, IMapper mapper)
+    public TicketService(
+        IGenericRepository<Ticket> repo,
+        IGenericRepository<Category> categoryRepo,
+        IMapper mapper,
+        ILogger<TicketService> logger)
     {
         _repo = repo;
         _categoryRepo = categoryRepo;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<TicketDto>> GetAllAsync()
@@ -34,33 +42,31 @@ public class TicketService : ITicketService
     {
         var ticket = _mapper.Map<Ticket>(dto);
 
-        if (ticket.UserId == 0)
-        {
-            ticket.UserId = dto.UserId;
-        }
-
         var allCategories = await _categoryRepo.GetAllAsync();
-        ticket.Categories = allCategories
-            .Where(c => dto.CategoryIds != null && dto.CategoryIds.Contains(c.Id))
-            .ToList();
+        ticket.Categories = allCategories.Where(c => dto.CategoryIds.Contains(c.Id)).ToList();
 
         await _repo.AddAsync(ticket);
         await _repo.SaveChangesAsync();
 
+        _logger.LogInformation("Ticket {TicketId} created by user {UserId}", ticket.Id, ticket.UserId);
+
         return _mapper.Map<TicketDto>(ticket);
     }
+
     public async Task<bool> UpdateAsync(int id, UpdateTicketDto dto)
     {
-        // Load WITH categories, so EF tracks the existing relationships correctly
         var ticket = await _repo.GetByIdWithIncludesAsync(id, nameof(Ticket.Categories));
-        if (ticket is null) return false;
+        if (ticket is null)
+        {
+            _logger.LogWarning("Update failed — ticket {TicketId} not found", id);
+            throw new NotFoundException($"Ticket with id {id} was not found.");
+        }
 
         _mapper.Map(dto, ticket);
 
         var selectedCategories = await _categoryRepo.GetAllAsync();
         var newCategories = selectedCategories.Where(c => dto.CategoryIds.Contains(c.Id)).ToList();
 
-        // Clear and re-add on the TRACKED collection, so EF computes the correct diff
         ticket.Categories.Clear();
         foreach (var category in newCategories)
         {
@@ -69,16 +75,26 @@ public class TicketService : ITicketService
 
         _repo.Update(ticket);
         await _repo.SaveChangesAsync();
+
+        _logger.LogInformation("Ticket {TicketId} updated", id);
+
         return true;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
         var ticket = await _repo.GetByIdAsync(id);
-        if (ticket is null) return false;
+        if (ticket is null)
+        {
+            _logger.LogWarning("Delete failed — ticket {TicketId} not found", id);
+            throw new NotFoundException($"Ticket with id {id} was not found.");
+        }
 
         _repo.Delete(ticket);
         await _repo.SaveChangesAsync();
+
+        _logger.LogInformation("Ticket {TicketId} deleted", id);
+
         return true;
     }
 }

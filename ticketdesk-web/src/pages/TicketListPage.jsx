@@ -34,7 +34,7 @@ function TicketListPage() {
       {error && <p>{error}</p>}
       {!loading && !error && (
         <>
-          <TicketList tickets={tickets} />
+          <TicketList tickets={tickets} onDeleted={fetchTickets} />
           {tickets.map((t) => (
             <div key={t.id}>
               <Link to={`/tickets/${t.id}`}>View #{t.id}</Link>
