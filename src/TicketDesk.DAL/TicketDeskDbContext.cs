@@ -12,6 +12,8 @@ public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) 
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketComment> TicketComments => Set<TicketComment>();
+    public DbSet<TicketAgent> TicketAgents => Set<TicketAgent>();
+    public DbSet<TicketManager> TicketManagers => Set<TicketManager>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,11 +47,69 @@ public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) 
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Ticket <-> Category (M:N) with clean join table configuration
+        // User -> Agent (self-referencing, 1:N, Restrict) — Week 7 Day 1
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Agent)
+            .WithMany(u => u.Managers)
+            .HasForeignKey(u => u.AgentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Ticket <-> Category (M:N)
         modelBuilder.Entity<Ticket>()
             .HasMany(t => t.Categories)
             .WithMany(c => c.Tickets)
             .UsingEntity(j => j.ToTable("TicketCategories"));
+
+        // Ticket <-> Agent (M:N via TicketAgent) — Week 7 Day 2
+        modelBuilder.Entity<TicketAgent>()
+            .HasKey(ta => new { ta.TicketId, ta.AgentId });
+
+        modelBuilder.Entity<TicketAgent>()
+            .HasOne(ta => ta.Ticket)
+            .WithMany()
+            .HasForeignKey(ta => ta.TicketId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TicketAgent>()
+            .HasOne(ta => ta.Agent)
+            .WithMany()
+            .HasForeignKey(ta => ta.AgentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Ticket <-> Manager (M:N via TicketManager) — Week 7 Day 2
+        modelBuilder.Entity<TicketManager>()
+            .HasKey(tm => new { tm.TicketId, tm.ManagerId });
+
+        modelBuilder.Entity<TicketManager>()
+            .HasOne(tm => tm.Ticket)
+            .WithMany()
+            .HasForeignKey(tm => tm.TicketId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TicketManager>()
+            .HasOne(tm => tm.Manager)
+            .WithMany()
+            .HasForeignKey(tm => tm.ManagerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Maker-Checker audit relationships — Week 7 Day 4
+        modelBuilder.Entity<Ticket>()
+            .HasOne(t => t.ResolvedByUser)
+            .WithMany()
+            .HasForeignKey(t => t.ResolvedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Ticket>()
+            .HasOne(t => t.ClosedByUser)
+            .WithMany()
+            .HasForeignKey(t => t.ClosedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Ticket>()
+            .HasOne(t => t.ReturnedByUser)
+            .WithMany()
+            .HasForeignKey(t => t.ReturnedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Enum string conversion for Ticket Status
         modelBuilder.Entity<Ticket>()

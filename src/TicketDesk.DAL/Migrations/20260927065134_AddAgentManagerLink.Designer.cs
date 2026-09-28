@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketDesk.DAL;
 
@@ -11,9 +12,11 @@ using TicketDesk.DAL;
 namespace TicketDesk.DAL.Migrations
 {
     [DbContext(typeof(TicketDeskDbContext))]
-    partial class TicketDeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260927065134_AddAgentManagerLink")]
+    partial class AddAgentManagerLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,30 +121,12 @@ namespace TicketDesk.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("ClosedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ClosedByUserId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ResolvedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReturnedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ReturnedByUserId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -157,30 +142,9 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClosedByUserId");
-
-                    b.HasIndex("ResolvedByUserId");
-
-                    b.HasIndex("ReturnedByUserId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Tickets");
-                });
-
-            modelBuilder.Entity("TicketDesk.Domain.Entities.TicketAgent", b =>
-                {
-                    b.Property<int>("TicketId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AgentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("TicketId", "AgentId");
-
-                    b.HasIndex("AgentId");
-
-                    b.ToTable("TicketAgents");
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.TicketComment", b =>
@@ -211,21 +175,6 @@ namespace TicketDesk.DAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("TicketComments");
-                });
-
-            modelBuilder.Entity("TicketDesk.Domain.Entities.TicketManager", b =>
-                {
-                    b.Property<int>("TicketId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ManagerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("TicketId", "ManagerId");
-
-                    b.HasIndex("ManagerId");
-
-                    b.ToTable("TicketManagers");
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.User", b =>
@@ -280,53 +229,13 @@ namespace TicketDesk.DAL.Migrations
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.Ticket", b =>
                 {
-                    b.HasOne("TicketDesk.Domain.Entities.User", "ClosedByUser")
-                        .WithMany()
-                        .HasForeignKey("ClosedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("TicketDesk.Domain.Entities.User", "ResolvedByUser")
-                        .WithMany()
-                        .HasForeignKey("ResolvedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("TicketDesk.Domain.Entities.User", "ReturnedByUser")
-                        .WithMany()
-                        .HasForeignKey("ReturnedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("TicketDesk.Domain.Entities.User", "User")
                         .WithMany("Tickets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ClosedByUser");
-
-                    b.Navigation("ResolvedByUser");
-
-                    b.Navigation("ReturnedByUser");
-
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TicketDesk.Domain.Entities.TicketAgent", b =>
-                {
-                    b.HasOne("TicketDesk.Domain.Entities.User", "Agent")
-                        .WithMany()
-                        .HasForeignKey("AgentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TicketDesk.Domain.Entities.Ticket", "Ticket")
-                        .WithMany()
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agent");
-
-                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.TicketComment", b =>
@@ -346,25 +255,6 @@ namespace TicketDesk.DAL.Migrations
                     b.Navigation("Ticket");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TicketDesk.Domain.Entities.TicketManager", b =>
-                {
-                    b.HasOne("TicketDesk.Domain.Entities.User", "Manager")
-                        .WithMany()
-                        .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TicketDesk.Domain.Entities.Ticket", "Ticket")
-                        .WithMany()
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Manager");
-
-                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.User", b =>

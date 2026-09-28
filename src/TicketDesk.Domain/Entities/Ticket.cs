@@ -19,4 +19,17 @@ public class Ticket
 
     // One-to-many: a Ticket has many Comments
     public ICollection<TicketComment> Comments { get; set; } = new List<TicketComment>();
+
+    // Maker-Checker audit trail (Week 7, Day 4)
+    public int? ResolvedByUserId { get; set; }
+    public User? ResolvedByUser { get; set; }
+    public DateTime? ResolvedAt { get; set; }
+
+    public int? ClosedByUserId { get; set; }
+    public User? ClosedByUser { get; set; }
+    public DateTime? ClosedAt { get; set; }
+
+    public int? ReturnedByUserId { get; set; }
+    public User? ReturnedByUser { get; set; }
+    public DateTime? ReturnedAt { get; set; }
 }

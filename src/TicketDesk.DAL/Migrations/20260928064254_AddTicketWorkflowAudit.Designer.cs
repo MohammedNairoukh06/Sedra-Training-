@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketDesk.DAL;
 
@@ -11,9 +12,11 @@ using TicketDesk.DAL;
 namespace TicketDesk.DAL.Migrations
 {
     [DbContext(typeof(TicketDeskDbContext))]
-    partial class TicketDeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260928064254_AddTicketWorkflowAudit")]
+    partial class AddTicketWorkflowAudit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,30 +121,12 @@ namespace TicketDesk.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("ClosedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ClosedByUserId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ResolvedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReturnedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ReturnedByUserId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -156,12 +141,6 @@ namespace TicketDesk.DAL.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClosedByUserId");
-
-                    b.HasIndex("ResolvedByUserId");
-
-                    b.HasIndex("ReturnedByUserId");
 
                     b.HasIndex("UserId");
 
@@ -280,32 +259,11 @@ namespace TicketDesk.DAL.Migrations
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.Ticket", b =>
                 {
-                    b.HasOne("TicketDesk.Domain.Entities.User", "ClosedByUser")
-                        .WithMany()
-                        .HasForeignKey("ClosedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("TicketDesk.Domain.Entities.User", "ResolvedByUser")
-                        .WithMany()
-                        .HasForeignKey("ResolvedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("TicketDesk.Domain.Entities.User", "ReturnedByUser")
-                        .WithMany()
-                        .HasForeignKey("ReturnedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("TicketDesk.Domain.Entities.User", "User")
                         .WithMany("Tickets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("ClosedByUser");
-
-                    b.Navigation("ResolvedByUser");
-
-                    b.Navigation("ReturnedByUser");
 
                     b.Navigation("User");
                 });
