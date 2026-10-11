@@ -30,19 +30,15 @@ public class ExceptionHandlingMiddleware
             var (statusCode, message) = ex switch
             {
                 NotFoundException => (HttpStatusCode.NotFound, ex.Message),
+                InvalidOperationException => (HttpStatusCode.BadRequest, ex.Message),
+                UnauthorizedAccessException => (HttpStatusCode.Forbidden, ex.Message),
                 _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again later.")
             };
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
 
-            var problem = new
-            {
-                type = "about:blank",
-                title = message,
-                status = (int)statusCode
-            };
-
+            var problem = new { type = "about:blank", title = message, status = (int)statusCode };
             await context.Response.WriteAsync(JsonSerializer.Serialize(problem));
         }
     }

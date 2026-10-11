@@ -24,7 +24,6 @@ public class UsersController : ControllerBase
         _passwordService = passwordService;
     }
 
-    // Admin creates Agents
     [HttpPost("agents")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateAgent(CreateUserDto dto)
@@ -46,7 +45,6 @@ public class UsersController : ControllerBase
         return Ok(new UserDto { Id = user.Id, FullName = user.FullName, Email = user.Email, Role = agentRole.Name });
     }
 
-    // Admin lists all Agents (used by the assign-agents UI)
     [HttpGet("agents")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAgents()
@@ -66,7 +64,6 @@ public class UsersController : ControllerBase
         return Ok(agents);
     }
 
-    // Agent creates a Manager, auto-linked to themselves
     [HttpPost("managers")]
     [Authorize(Roles = "Agent")]
     public async Task<IActionResult> CreateManager(CreateUserDto dto)
@@ -91,7 +88,6 @@ public class UsersController : ControllerBase
         return Ok(new UserDto { Id = user.Id, FullName = user.FullName, Email = user.Email, Role = managerRole.Name, AgentId = currentAgentId });
     }
 
-    // List the current Agent's own Managers
     [HttpGet("my-managers")]
     [Authorize(Roles = "Agent")]
     public async Task<IActionResult> GetMyManagers()

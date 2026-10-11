@@ -17,12 +17,11 @@ public class TicketService : ITicketService
     private readonly IMapper _mapper;
     private readonly ILogger<TicketService> _logger;
 
-    // Allowed transitions through the generic status endpoint (Day 3)
     private static readonly Dictionary<TicketStatus, TicketStatus[]> AllowedTransitions = new()
     {
         [TicketStatus.Open] = new[] { TicketStatus.InProgress },
         [TicketStatus.InProgress] = new[] { TicketStatus.Resolved },
-        [TicketStatus.Resolved] = Array.Empty<TicketStatus>(), // only moves via /close or /return (Day 4)
+        [TicketStatus.Resolved] = Array.Empty<TicketStatus>(),
         [TicketStatus.Closed] = Array.Empty<TicketStatus>()
     };
 
@@ -112,7 +111,6 @@ public class TicketService : ITicketService
         return true;
     }
 
-    // Day 3: Open -> InProgress and InProgress -> Resolved
     public async Task ChangeStatusAsync(int id, string newStatusRaw, int currentUserId, string currentUserRole)
     {
         var ticket = await _db.Tickets.FindAsync(id);
@@ -126,7 +124,6 @@ public class TicketService : ITicketService
         if (!allowed.Contains(newStatus))
             throw new InvalidOperationException($"Cannot move a ticket from {ticket.Status} to {newStatus}.");
 
-        // A Manager must be assigned to this specific ticket; Agent/Admin are allowed
         if (currentUserRole == "Manager")
         {
             var isAssigned = await _db.TicketManagers.AnyAsync(tm => tm.TicketId == id && tm.ManagerId == currentUserId);
@@ -150,7 +147,6 @@ public class TicketService : ITicketService
         _logger.LogInformation("Ticket {TicketId} status changed to {NewStatus} by user {UserId}", id, newStatus, currentUserId);
     }
 
-    // Day 4: the Agent (checker) finalizes — Resolved -> Closed
     public async Task CloseAsync(int id, int currentUserId)
     {
         var ticket = await _db.Tickets.FindAsync(id);
@@ -168,7 +164,6 @@ public class TicketService : ITicketService
         _logger.LogInformation("Ticket {TicketId} closed by user {UserId}", id, currentUserId);
     }
 
-    // Day 4: the Agent (checker) sends it back — Resolved -> InProgress
     public async Task ReturnAsync(int id, int currentUserId)
     {
         var ticket = await _db.Tickets.FindAsync(id);

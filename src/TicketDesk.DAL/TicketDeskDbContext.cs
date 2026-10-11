@@ -4,7 +4,6 @@ using TicketDesk.Domain.Enums;
 
 namespace TicketDesk.DAL;
 
-// Using C# 12 Primary Constructor
 public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
@@ -19,48 +18,41 @@ public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) 
     {
         base.OnModelCreating(modelBuilder);
 
-        // Ticket -> User (1:N)
         modelBuilder.Entity<Ticket>()
             .HasOne(t => t.User)
             .WithMany(u => u.Tickets)
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // TicketComment -> Ticket (1:N, Cascade)
         modelBuilder.Entity<TicketComment>()
             .HasOne(c => c.Ticket)
             .WithMany(t => t.Comments)
             .HasForeignKey(c => c.TicketId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // TicketComment -> User (Author) (1:N, Restrict)
         modelBuilder.Entity<TicketComment>()
             .HasOne(c => c.User)
             .WithMany()
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // User -> Role (1:N, Restrict)
         modelBuilder.Entity<User>()
             .HasOne(u => u.Role)
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // User -> Agent (self-referencing, 1:N, Restrict) — Week 7 Day 1
         modelBuilder.Entity<User>()
             .HasOne(u => u.Agent)
             .WithMany(u => u.Managers)
             .HasForeignKey(u => u.AgentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Ticket <-> Category (M:N)
         modelBuilder.Entity<Ticket>()
             .HasMany(t => t.Categories)
             .WithMany(c => c.Tickets)
             .UsingEntity(j => j.ToTable("TicketCategories"));
 
-        // Ticket <-> Agent (M:N via TicketAgent) — Week 7 Day 2
         modelBuilder.Entity<TicketAgent>()
             .HasKey(ta => new { ta.TicketId, ta.AgentId });
 
@@ -76,7 +68,6 @@ public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) 
             .HasForeignKey(ta => ta.AgentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Ticket <-> Manager (M:N via TicketManager) — Week 7 Day 2
         modelBuilder.Entity<TicketManager>()
             .HasKey(tm => new { tm.TicketId, tm.ManagerId });
 
@@ -92,7 +83,6 @@ public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) 
             .HasForeignKey(tm => tm.ManagerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Maker-Checker audit relationships — Week 7 Day 4
         modelBuilder.Entity<Ticket>()
             .HasOne(t => t.ResolvedByUser)
             .WithMany()
@@ -111,20 +101,17 @@ public class TicketDeskDbContext(DbContextOptions<TicketDeskDbContext> options) 
             .HasForeignKey(t => t.ReturnedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Enum string conversion for Ticket Status
         modelBuilder.Entity<Ticket>()
             .Property(t => t.Status)
             .HasConversion<string>()
             .HasMaxLength(20);
 
-        // Seed Roles
         modelBuilder.Entity<Role>().HasData(
             new Role { Id = 1, Name = "Admin" },
             new Role { Id = 2, Name = "Agent" },
             new Role { Id = 3, Name = "Customer" }
         );
 
-        // Seed Categories
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Hardware" },
             new Category { Id = 2, Name = "Software" },

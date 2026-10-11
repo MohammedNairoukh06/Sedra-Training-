@@ -3,7 +3,7 @@ using TicketDesk.BL;
 using TicketDesk.DAL;
 using TicketDesk.Domain.Entities;
 
-namespace TicketDesk.API.Controllers;
+namespace TicketDesk.API.Controller;
 
 public class LoginDto
 {

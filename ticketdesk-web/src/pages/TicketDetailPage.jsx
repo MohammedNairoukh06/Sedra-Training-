@@ -18,6 +18,8 @@ function TicketDetailPage() {
   const role = localStorage.getItem('role');
   const fullName = localStorage.getItem('fullName');
 
+  const isStaff = role === 'Admin' || role === 'Agent' || role === 'Manager';
+
   const [ticket, setTicket] = useState(null);
   const [assignments, setAssignments] = useState({ agents: [], managers: [] });
   const [options, setOptions] = useState([]);
@@ -34,24 +36,29 @@ function TicketDetailPage() {
       return;
     }
 
-    const a = await getAssignments(id);
-    setAssignments(a);
+    if (isStaff) {
+      try {
+        const a = await getAssignments(id);
+        setAssignments(a);
 
-    if (role === 'Admin') {
-      const agents = await getAgents();
-      setOptions(agents);
-      setSelectedIds(a.agents.map((x) => x.id));
-    } else if (role === 'Agent') {
-      const managers = await getMyManagers();
-      setOptions(managers);
-      // only pre-tick managers that belong to this agent
-      setSelectedIds(
-        a.managers.map((x) => x.id).filter((mid) => managers.some((m) => m.id === mid))
-      );
+        if (role === 'Admin') {
+          const agents = await getAgents();
+          setOptions(agents);
+          setSelectedIds(a.agents.map((x) => x.id));
+        } else if (role === 'Agent') {
+          const managers = await getMyManagers();
+          setOptions(managers);
+          setSelectedIds(
+            a.managers.map((x) => x.id).filter((mid) => managers.some((m) => m.id === mid))
+          );
+        }
+      } catch (e) {
+        setError(`Could not load the assigned team: ${e.message}`);
+      }
     }
 
     setLoading(false);
-  }, [id, role]);
+  }, [id, role, isStaff]);
 
   useEffect(() => {
     load().catch((e) => {
@@ -66,7 +73,6 @@ function TicketDetailPage() {
     );
   };
 
-  // Runs an API action, shows the result, then refreshes the ticket
   const run = async (action, successText) => {
     setError('');
     setMessage('');
@@ -100,11 +106,14 @@ function TicketDetailPage() {
       {message && <p style={{ color: 'lightgreen' }}>{message}</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <h2>Assigned team</h2>
-      <p>Agents: {assignments.agents.map((a) => a.fullName).join(', ') || 'none'}</p>
-      <p>Managers: {assignments.managers.map((m) => m.fullName).join(', ') || 'none'}</p>
+      {isStaff && (
+        <>
+          <h2>Assigned team</h2>
+          <p>Agents: {assignments.agents.map((a) => a.fullName).join(', ') || 'none'}</p>
+          <p>Managers: {assignments.managers.map((m) => m.fullName).join(', ') || 'none'}</p>
+        </>
+      )}
 
-      {/* Admin: assign agents */}
       {role === 'Admin' && (
         <div>
           <h3>Assign agents</h3>
@@ -119,15 +128,12 @@ function TicketDetailPage() {
               {agent.fullName}
             </label>
           ))}
-          <button
-            onClick={() => run(() => assignAgents(id, selectedIds), 'Agents updated.')}
-          >
+          <button onClick={() => run(() => assignAgents(id, selectedIds), 'Agents updated.')}>
             Save agents
           </button>
         </div>
       )}
 
-      {/* Agent: share with own managers */}
       {role === 'Agent' && (
         <div>
           <h3>Share with my managers</h3>
@@ -142,40 +148,41 @@ function TicketDetailPage() {
               {manager.fullName}
             </label>
           ))}
-          <button
-            onClick={() => run(() => assignManagers(id, selectedIds), 'Managers updated.')}
-          >
+          <button onClick={() => run(() => assignManagers(id, selectedIds), 'Managers updated.')}>
             Save managers
           </button>
         </div>
       )}
 
-      {/* Workflow buttons: each one only for the role allowed to use it */}
-      <h3>Workflow</h3>
-
-      {canWork && ticket.status === 'Open' && (
-        <button onClick={() => run(() => changeStatus(id, 'InProgress'), 'Ticket is now In Progress.')}>
-          Start work
-        </button>
-      )}
-
-      {canWork && ticket.status === 'InProgress' && (
-        <button onClick={() => run(() => changeStatus(id, 'Resolved'), 'Ticket marked Resolved.')}>
-          Mark resolved
-        </button>
-      )}
-
-      {isAgentOrAdmin && ticket.status === 'Resolved' && (
+      {canWork && (
         <>
-          <button onClick={() => run(() => closeTicket(id), 'Ticket closed.')}>Close ticket</button>{' '}
-          <button onClick={() => run(() => returnTicket(id), 'Ticket returned to the manager.')}>
-            Return to manager
-          </button>
-        </>
-      )}
+          <h3>Workflow</h3>
 
-      {role === 'Manager' && ticket.status === 'Resolved' && (
-        <p>Waiting for the agent to close or return this ticket.</p>
+          {ticket.status === 'Open' && (
+            <button onClick={() => run(() => changeStatus(id, 'InProgress'), 'Ticket is now In Progress.')}>
+              Start work
+            </button>
+          )}
+
+          {ticket.status === 'InProgress' && (
+            <button onClick={() => run(() => changeStatus(id, 'Resolved'), 'Ticket marked Resolved.')}>
+              Mark resolved
+            </button>
+          )}
+
+          {isAgentOrAdmin && ticket.status === 'Resolved' && (
+            <>
+              <button onClick={() => run(() => closeTicket(id), 'Ticket closed.')}>Close ticket</button>{' '}
+              <button onClick={() => run(() => returnTicket(id), 'Ticket returned to the manager.')}>
+                Return to manager
+              </button>
+            </>
+          )}
+
+          {role === 'Manager' && ticket.status === 'Resolved' && (
+            <p>Waiting for the agent to close or return this ticket.</p>
+          )}
+        </>
       )}
 
       {ticket.status === 'Closed' && <p>This ticket is closed.</p>}

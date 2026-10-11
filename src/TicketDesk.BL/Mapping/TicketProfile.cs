@@ -9,13 +9,15 @@ public class TicketProfile : Profile
     public TicketProfile()
     {
         CreateMap<Ticket, TicketDto>()
-            .ForMember(dest => dest.Categories,
-                opt => opt.MapFrom(src => src.Categories.Select(c => c.Name)));
+            .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.Categories.Select(c => c.Name).ToList()));
 
         CreateMap<CreateTicketDto, Ticket>()
             .ForMember(dest => dest.Categories, opt => opt.Ignore());
 
         CreateMap<UpdateTicketDto, Ticket>()
             .ForMember(dest => dest.Categories, opt => opt.Ignore());
+
+        CreateMap<TicketComment, CommentDto>()
+            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName));
     }
 }

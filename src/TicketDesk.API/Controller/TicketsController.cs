@@ -67,7 +67,6 @@ public class TicketsController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-    // Who is currently assigned to this ticket (agents and managers)
     [HttpGet("{id}/assignments")]
     public async Task<IActionResult> GetAssignments(int id)
     {
@@ -88,7 +87,6 @@ public class TicketsController : ControllerBase
         return Ok(new { agents, managers });
     }
 
-    // Admin assigns a ticket to one or more Agents
     [HttpPost("{id}/agents")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AssignAgents(int id, AssignUsersDto dto)
@@ -114,7 +112,6 @@ public class TicketsController : ControllerBase
         return Ok(new { ticketId = id, assignedAgentIds = validAgentIds });
     }
 
-    // Agent shares the ticket with one or more of their OWN Managers only
     [HttpPost("{id}/managers")]
     [Authorize(Roles = "Agent")]
     public async Task<IActionResult> AssignManagers(int id, AssignUsersDto dto)
@@ -130,7 +127,6 @@ public class TicketsController : ControllerBase
             .Select(u => u.Id)
             .ToListAsync();
 
-        // Only replace THIS agent's managers, so other agents' managers stay assigned
         var existingLinks = await _db.TicketManagers
             .Where(tm => tm.TicketId == id && tm.Manager.AgentId == currentAgentId)
             .ToListAsync();
@@ -145,7 +141,6 @@ public class TicketsController : ControllerBase
         return Ok(new { ticketId = id, assignedManagerIds = validManagerIds });
     }
 
-    // Day 3: generic status transition (Open->InProgress, InProgress->Resolved)
     [HttpPost("{id}/status")]
     [Authorize(Roles = "Manager,Agent,Admin")]
     public async Task<IActionResult> ChangeStatus(int id, ChangeStatusDto dto)
@@ -157,7 +152,6 @@ public class TicketsController : ControllerBase
         return NoContent();
     }
 
-    // Day 4: Agent (checker) finalizes — Resolved -> Closed
     [HttpPost("{id}/close")]
     [Authorize(Roles = "Agent,Admin")]
     public async Task<IActionResult> Close(int id)
@@ -167,7 +161,6 @@ public class TicketsController : ControllerBase
         return NoContent();
     }
 
-    // Day 4: Agent (checker) sends it back — Resolved -> InProgress
     [HttpPost("{id}/return")]
     [Authorize(Roles = "Agent,Admin")]
     public async Task<IActionResult> Return(int id)

@@ -51,7 +51,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -90,7 +90,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -165,7 +165,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.TicketAgent", b =>
@@ -180,7 +180,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasIndex("AgentId");
 
-                    b.ToTable("TicketAgents");
+                    b.ToTable("TicketAgents", (string)null);
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.TicketComment", b =>
@@ -210,7 +210,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketComments");
+                    b.ToTable("TicketComments", (string)null);
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.TicketManager", b =>
@@ -225,7 +225,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasIndex("ManagerId");
 
-                    b.ToTable("TicketManagers");
+                    b.ToTable("TicketManagers", (string)null);
                 });
 
             modelBuilder.Entity("TicketDesk.Domain.Entities.User", b =>
@@ -260,7 +260,7 @@ namespace TicketDesk.DAL.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("CategoryTicket", b =>

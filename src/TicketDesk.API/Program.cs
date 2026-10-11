@@ -1,21 +1,22 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
+using TicketDesk.API;
+using TicketDesk.API.Middleware;
 using TicketDesk.BL;
 using TicketDesk.BL.Mapping;
 using TicketDesk.DAL;
-using TicketDesk.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Controller services to the DI container
+// Controllers
 builder.Services.AddControllers();
 
-// Add Swagger
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -44,21 +45,26 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Register TicketDeskDbContext with the DI container
+// Database
 builder.Services.AddDbContext<TicketDeskDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("TicketDeskConnection")));
 
-// Register the generic repository (Day 2, Week 4)
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+// Generic Repository
+builder.Services.AddScoped(
+    typeof(IGenericRepository<>),
+    typeof(GenericRepository<>));
 
-// Register AutoMapper (Day 3, Week 4)
-builder.Services.AddAutoMapper(cfg => cfg.AddProfile<TicketProfile>());
+// AutoMapper
+builder.Services.AddAutoMapper(cfg =>
+    cfg.AddProfile<TicketProfile>());
 
-// Register the ticket service (Day 3, Week 4)
+// Services
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<TokenService>();
 
-// Register API versioning + Swagger integration (Day 5, Week 4)
+// API Versioning
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
@@ -72,7 +78,7 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
-// Register CORS for the React dev server (Day 2, Week 5)
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactDev", policy =>
@@ -83,12 +89,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Register password hashing + JWT token generation (Day 3, Week 6)
-builder.Services.AddScoped<TicketDesk.BL.PasswordService>();
-builder.Services.AddScoped<TicketDesk.BL.TokenService>();
-
-// Register JWT authentication (Day 3, Week 6)
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+// JWT Authentication
+builder.Services.AddAuthentication(
+    JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -97,18 +100,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"] ?? string.Empty))
         };
     });
 
+// Authorization
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Global exception handling middleware (Day 2, Week 6)
-app.UseMiddleware<TicketDesk.API.Middleware.ExceptionHandlingMiddleware>();
+// Global Exception Handling Middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Swagger
 if (app.Environment.IsDevelopment())
@@ -117,33 +125,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Database Migration & Startup Verification
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<TicketDeskDbContext>();
-
-    db.Database.Migrate();
-
-    var roles = db.Roles.OrderBy(r => r.Id).Select(r => r.Name).ToList();
-    Console.WriteLine("Seeded roles: " + string.Join(", ", roles));
-
-    var categories = db.Categories.OrderBy(c => c.Id).Select(c => c.Name).ToList();
-    Console.WriteLine("Seeded categories: " + string.Join(", ", categories));
-}
-
+// CORS
 app.UseCors("AllowReactDev");
 
-// Authentication must come before Authorization, and both before MapControllers (Day 3, Week 6)
+// Authentication MUST come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Simple root endpoint
+// Root endpoint
 app.MapGet("/", () => "TicketDesk API is running.");
 
-// Health endpoint — confirms the DbContext resolves via DI and the DB is reachable
+// Health check
 app.MapGet("/api/health", (TicketDeskDbContext db) =>
 {
     var canConnect = db.Database.CanConnect();
+
     return Results.Ok(new
     {
         status = canConnect ? "healthy" : "unhealthy",
@@ -152,7 +148,7 @@ app.MapGet("/api/health", (TicketDeskDbContext db) =>
     });
 });
 
-// Map controller endpoints
+// Controllers
 app.MapControllers();
 
 app.Run();
